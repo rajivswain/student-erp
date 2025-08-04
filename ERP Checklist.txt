@@ -1,0 +1,97 @@
+1. Added a admin user hard coded in the code, Need to remove that once data base created. 
+
+Absolutely! Here’s a clear summary of **where (folder/file)** and **what exactly to change** in your Node.js/Express backend project to add a **temporary hardcoded admin user** based on the email `admin@test.com`.
+
+---
+
+# Overview of Changes to Add Temporary Admin
+
+| Step | Folder/File                                                            | What to Change / Add                                                                                  | Purpose                                        |
+| ---- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| 1    | `backend/utils/jwt.js`                                                 | Update `signToken` to include `email` in JWT payload                                                  | So token carries user email for identification |
+| 2    | `backend/controllers/authController.js` (or wherever login is handled) | Pass `email` when calling `signToken` during login                                                    | To embed email inside JWT token                |
+| 3    | `backend/middleware/authMiddleware.js`                                 | After decoding JWT, check if `decoded.email === 'admin@test.com'`, then set `req.user.role = 'admin'` | Hardcode admin role based on email             |
+
+---
+
+# Detailed Explanation & Code
+
+---
+
+## 1. Update `jwt.js`
+
+**Folder:** `backend/utils/`
+
+**File:** `jwt.js`
+
+**Change:**
+
+```js
+export function signToken(userId, role, email) {
+  const payload = { userId, role, email }; // include email here
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+}
+```
+
+---
+
+## 2. Update Login Controller
+
+**Folder:** `backend/controllers/`
+
+**File:** `authController.js` (or your login handler file)
+
+**Find the login function** that validates user and generates token, and change:
+
+```js
+const token = signToken(user.id, user.role, user.email); // Pass email here
+```
+
+---
+
+## 3. Update Authentication Middleware
+
+**Folder:** `backend/middleware/`
+
+**File:** `authMiddleware.js`
+
+**Inside the function that verifies token and attaches user info (`req.user`), add:**
+
+```js
+if (decoded.email && decoded.email.toLowerCase() === 'admin@test.com') {
+  req.user.role = 'admin';  // Temporary hardcoded admin
+}
+```
+
+**Full snippet example:**
+
+```js
+req.user = {
+  userId: decoded.userId,
+  role: decoded.role,
+  email: decoded.email,  // optional, for your reference
+};
+
+if (decoded.email && decoded.email.toLowerCase() === 'admin@test.com') {
+  req.user.role = 'admin';
+}
+```
+
+---
+
+# Summary of Purpose:
+
+* **Step 1:** Make sure the token contains the email so you can identify admin by email.
+* **Step 2:** When logging in, the JWT includes the user email.
+* **Step 3:** When authenticating requests, check if the user email is `admin@test.com` and assign admin role temporarily.
+
+---
+
+# Reminder:
+
+* **This is a temporary solution for development/testing only.**
+* Remove this hardcoding once you implement proper role storage in the database (Supabase profiles table, for example).
+
+---
+
+If you want, I can also help you write or review the full files with these changes — just ask!
