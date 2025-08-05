@@ -1,38 +1,87 @@
-// // Line 1: Import express
+// // Import Express
 // import express from 'express';
 
-// const router = express.Router(); // Line 3: Initialize express router
+// // Route Initialization
+// const router = express.Router(); 
 
-// // Line 5: Sample route - You can expand this based on your student features
-// router.get('/', (req, res) => {
-//   res.status(200).json({
-//     message: '📚 Student route working!',
-//     status: 'success',
-//   });
-// });
+// // Import controller functions
+// import {
+//   createStudent,
+//   getAllStudents,
+//   getStudentById,
+//   updateStudent,
+//   deleteStudent,
+// } from '../controllers/studentController.js';
 
-// // Line 11: Export the router using ESM syntax
+// import authMiddleware from '../middleware/authMiddleware.js';  // ✅ Auth check
+// import authorizeRole from '../middleware/roleMiddleware.js';        // ✅ Role check
+
+// // Create router instance
+// const router = express.Router();
+
+// // Role-based middleware
+// function authorizeRoles(...allowedRoles) {
+//   return (req, res, next) => {
+//     const userRole = req.user?.role;
+//     if (!allowedRoles.includes(userRole)) {
+//       return res.status(403).json({ error: 'Access denied: insufficient permissions' });
+//     }
+//     next();
+//   };
+// }
+
+// // Define routes 
+
+// // Apply auth to all routes
+// router.use(authMiddleware);
+
+// // ✅ Create student (Admin only)
+// router.post('/', authorizeRoles('admin'), createStudent);
+
+// // 📄 Get all students (Admin, Teacher)
+// router.get('/', authorizeRoles('admin', 'teacher'), getAllStudents);
+
+// // 🔍 Get student by ID (Admin, Teacher)
+// router.get('/:id', authorizeRoles('admin', 'teacher'), getStudentById);
+
+// // ✏️ Update student (Admin only)
+// router.put('/:id', authorizeRoles('admin'), updateStudent);
+
+// // ❌ Delete student (Admin only)
+// router.delete('/:id', authorizeRoles('admin'), deleteStudent);
+
 // export default router;
+
+
+
+
+
 
 
 
 // Import Express
 import express from 'express';
+
+// Route Initialization
+const router = express.Router();
+
 // Import controller functions
 import {
   createStudent,
-  getAllStudents,
+  getStudents,       // ✅ Assuming this returns all students
   getStudentById,
   updateStudent,
   deleteStudent,
 } from '../controllers/studentController.js';
 
-import authMiddleware from '../middleware/authMiddleware.js';
+import authMiddleware from '../middleware/authMiddleware.js';     // ✅ Auth check
 
-// Create router instance
-const router = express.Router();
+// Import validation
+import { studentValidationRules } from '../validators/studentValidator.js';
+import validateRequest from '../middleware/validateRequest.js';
 
-// Role-based middleware
+
+// ✅ Role-based middleware
 function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
     const userRole = req.user?.role;
@@ -43,24 +92,51 @@ function authorizeRoles(...allowedRoles) {
   };
 }
 
-// Define routes 
-
-// Apply auth to all routes
+// ✅ Apply auth to all routes
 router.use(authMiddleware);
 
-// ✅ Create student (Admin only)
-router.post('/', authorizeRoles('admin'), createStudent);
+// ============================
+// 🔐 Role-Based Student Routes
+// ============================
 
-// 📄 Get all students (Admin, Teacher)
-router.get('/', authorizeRoles('admin', 'teacher'), getAllStudents);
+// ✅ Create student → Admin, Teacher
+router.post(
+  '/', 
+  authorizeRoles(['admin', 'teacher']), 
+  studentValidationRules,         // 🧠 Add field validation
+  validateRequest,                // 🛡️ Handle validation errors
+  createStudent
+);
 
-// 🔍 Get student by ID (Admin, Teacher)
-router.get('/:id', authorizeRoles('admin', 'teacher'), getStudentById);
+// 📄 Get all students → Admin, Teacher, Student
+router.get(
+  '/', 
+  authorizeRoles(['admin', 'teacher', 'student']), 
+  getAllStudents
+);
 
-// ✏️ Update student (Admin only)
-router.put('/:id', authorizeRoles('admin'), updateStudent);
+// 🔍 Get student by ID → Admin, Teacher, Student
+router.get(
+  '/:id', 
+  authorizeRoles(['admin', 'teacher', 'student']), 
+  getStudentById
+);
 
-// ❌ Delete student (Admin only)
-router.delete('/:id', authorizeRoles('admin'), deleteStudent);
+// ✏️ Update student → Admin, Teacher
+router.put(
+  '/:id', 
+  authorizeRoles(['admin', 'teacher']),
+  studentValidationRules,         // 🧠 Add field validation
+  validateRequest,                // 🛡️ Handle validation errors 
+  updateStudent
+);
+
+// ❌ Delete student → Admin, Teacher
+router.delete(
+  '/:id', 
+  authorizeRoles(['admin', 'teacher']), 
+  deleteStudent
+);
 
 export default router;
+
