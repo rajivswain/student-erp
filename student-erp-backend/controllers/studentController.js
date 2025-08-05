@@ -1,5 +1,5 @@
 // Line 1: Import Supabase client
-import supabase from '../utils/supabaseClient.js';
+import supabase from '../config/supabaseClient.js';
 
 // Line 3: Create a new student
 export async function createStudent(req, res) {

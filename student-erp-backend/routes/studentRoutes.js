@@ -112,7 +112,7 @@ router.post(
 router.get(
   '/', 
   authorizeRoles(['admin', 'teacher', 'student']), 
-  getAllStudents
+  getStudents
 );
 
 // 🔍 Get student by ID → Admin, Teacher, Student
