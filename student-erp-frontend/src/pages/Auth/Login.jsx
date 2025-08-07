@@ -7,11 +7,21 @@
 //   const [loading, setLoading] = useState(false);
 //   const navigate = useNavigate();
 
-//   // Redirect to dashboard if already logged in
+//   // Redirect to role-based dashboard if already logged in
 //   useEffect(() => {
 //     const token = localStorage.getItem("token");
-//     if (token) {
-//       navigate("/dashboard", { replace: true });
+//     const role = localStorage.getItem("role");
+
+//     if (token && role) {
+//       if (role === "admin") {
+//         navigate("/admin", { replace: true });
+//       } else if (role === "teacher") {
+//         navigate("/teacher", { replace: true });
+//       } else if (role === "student") {
+//         navigate("/student", { replace: true });
+//       } else {
+//         navigate("/login", { replace: true }); // fallback
+//       }
 //     }
 //   }, [navigate]);
 
@@ -24,11 +34,23 @@
 //     setLoading(true);
 //     try {
 //       const res = await API.post("/auth/login", form);
-//       localStorage.setItem("token", res.data.token);
-//       localStorage.setItem("role", res.data.user?.role || "unknown");
-//       navigate("/dashboard");
+//       const { token, user } = res.data;
+
+//       localStorage.setItem("token", token);
+//       localStorage.setItem("role", user.role);
+
+//       // Role-based redirect
+//       if (user.role === "admin") {
+//         navigate("/admin");
+//       } else if (user.role === "teacher") {
+//         navigate("/teacher");
+//       } else if (user.role === "student") {
+//         navigate("/student");
+//       } else {
+//         alert("Unknown role, please contact admin.");
+//       }
 //     } catch (err) {
-//       alert("Login failed");
+//       alert("Login failed. Please check your email and password.");
 //     } finally {
 //       setLoading(false);
 //     }
@@ -63,7 +85,6 @@
 // }
 
 
-
 import { useState, useEffect } from "react";
 import API from "../../api/axios";
 import { useNavigate } from "react-router-dom";
@@ -73,7 +94,6 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Redirect to role-based dashboard if already logged in
   useEffect(() => {
     const token = localStorage.getItem("token");
     const role = localStorage.getItem("role");
@@ -86,7 +106,7 @@ export default function Login() {
       } else if (role === "student") {
         navigate("/student", { replace: true });
       } else {
-        navigate("/login", { replace: true }); // fallback
+        navigate("/dashboard", { replace: true }); // fallback
       }
     }
   }, [navigate]);
@@ -105,7 +125,6 @@ export default function Login() {
       localStorage.setItem("token", token);
       localStorage.setItem("role", user.role);
 
-      // Role-based redirect
       if (user.role === "admin") {
         navigate("/admin");
       } else if (user.role === "teacher") {
@@ -113,10 +132,11 @@ export default function Login() {
       } else if (user.role === "student") {
         navigate("/student");
       } else {
-        alert("Unknown role, please contact admin.");
+        navigate("/dashboard");
       }
     } catch (err) {
-      alert("Login failed. Please check your email and password.");
+      const message = err.response?.data?.error || "Login failed. Please check your email and password.";
+      alert(message);
     } finally {
       setLoading(false);
     }
