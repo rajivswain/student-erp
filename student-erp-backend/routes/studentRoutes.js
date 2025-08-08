@@ -1,86 +1,3 @@
-// // Import Express
-// import express from 'express';
-
-// // Route Initialization
-// const router = express.Router();
-
-// // Import controller functions
-// import {
-//   createStudent,
-//   getStudents,       // ✅ Assuming this returns all students
-//   getStudentById,
-//   updateStudent,
-//   deleteStudent,
-// } from '../controllers/studentController.js';
-
-// import authMiddleware from '../middleware/authMiddleware.js';     // ✅ Auth check
-
-// // Import validation
-// import { studentValidationRules } from '../validators/studentValidator.js';
-// import validateRequest from '../middleware/validateRequest.js';
-
-
-// // ✅ Role-based middleware
-// function authorizeRoles(...allowedRoles) {
-//   return (req, res, next) => {
-//     const userRole = req.user?.role;
-//     if (!allowedRoles.includes(userRole)) {
-//       return res.status(403).json({ error: 'Access denied: insufficient permissions' });
-//     }
-//     next();
-//   };
-// }
-
-// // ✅ Apply auth to all routes
-// router.use(authMiddleware);
-
-// // ============================
-// // 🔐 Role-Based Student Routes
-// // ============================
-
-// // ✅ Create student → Admin, Teacher
-// router.post(
-//   '/', 
-//   authorizeRoles(['admin', 'teacher']), 
-//   studentValidationRules,         // 🧠 Add field validation
-//   validateRequest,                // 🛡️ Handle validation errors
-//   createStudent
-// );
-
-// // 📄 Get all students → Admin, Teacher, Student
-// router.get(
-//   '/', 
-//   authorizeRoles(['admin', 'teacher', 'student']), 
-//   getStudents
-// );
-
-// // 🔍 Get student by ID → Admin, Teacher, Student
-// router.get(
-//   '/:id', 
-//   authorizeRoles(['admin', 'teacher', 'student']), 
-//   getStudentById
-// );
-
-// // ✏️ Update student → Admin, Teacher
-// router.put(
-//   '/:id', 
-//   authorizeRoles(['admin', 'teacher']),
-//   studentValidationRules,         // 🧠 Add field validation
-//   validateRequest,                // 🛡️ Handle validation errors 
-//   updateStudent
-// );
-
-// // ❌ Delete student → Admin, Teacher
-// router.delete(
-//   '/:id', 
-//   authorizeRoles(['admin', 'teacher']), 
-//   deleteStudent
-// );
-
-// export default router;
-
-
-
 
 // // 📦 Import Express framework
 // import express from 'express';
@@ -97,10 +14,7 @@
 //   deleteStudent        // ❌ Delete a student
 // } from '../controllers/studentController.js';
 
-// // 🖼️ Import service for photo uploads
-// import uploadStudentPhoto from '../services/storageService.js'; // 🖼️ For photo uploads
-
-// // Import upload middleware for file uploads
+// // 🖼️ Import upload middleware for file uploads
 // import upload from '../middleware/uploadMiddleware.js';
 
 // // 🔐 Import authentication middleware to verify JWT
@@ -116,14 +30,13 @@
 // // 🔐 Role-Based Access Control
 // // ============================
 
-// // ✅ Middleware to restrict access based on user roles
 // function authorizeRoles(...allowedRoles) {
 //   return (req, res, next) => {
-//     const userRole = req.user?.role; // 🧠 Extract role from authenticated user
+//     const userRole = req.user?.role;
 //     if (!allowedRoles.includes(userRole)) {
-//       return res.status(403).json({ error: 'Access denied: insufficient permissions' }); // 🚫 Forbidden
+//       return res.status(403).json({ error: 'Access denied: insufficient permissions' });
 //     }
-//     next(); // ✅ Proceed if role is authorized
+//     next();
 //   };
 // }
 
@@ -131,7 +44,6 @@
 // // 🔐 Apply Auth Globally to All Routes
 // // ============================
 
-// // 🔒 Protect all student routes with authentication
 // router.use(authMiddleware);
 
 // // ============================
@@ -140,42 +52,43 @@
 
 // // 🆕 Create student → Only Admin and Teacher
 // router.post(
-//   '/', 
-//   authorizeRoles('admin', 'teacher'),     // 🔐 Role check
-//   upload,                                 // Add file upload middleware
-//   studentValidationRules,                 // 📏 Validate input fields
-//   validateRequest,                        // 🛡️ Handle validation errors
-//   createStudent                           // 🧠 Controller to create student
+//   '/',
+//   authorizeRoles('admin', 'teacher'),
+//   upload, // ✅ File upload middleware
+//   studentValidationRules,
+//   validateRequest,
+//   createStudent
 // );
 
-// // 📄 Get all students (with pagination) → Admin, Teacher, Student
+// // 📄 Get all students → Admin, Teacher, Student
 // router.get(
-//   '/', 
-//   authorizeRoles('admin', 'teacher', 'student'), // 🔐 Role check
-//   getStudents                                     // 🧠 Controller to fetch students
+//   '/',
+//   authorizeRoles('admin', 'teacher', 'student'),
+//   getStudents
 // );
 
 // // 🔍 Get student by ID → Admin, Teacher, Student
 // router.get(
-//   '/:id', 
-//   authorizeRoles('admin', 'teacher', 'student'), // 🔐 Role check
-//   getStudentById                                 // 🧠 Controller to fetch student by ID
+//   '/:id',
+//   authorizeRoles('admin', 'teacher', 'student'),
+//   getStudentById
 // );
 
 // // ✏️ Update student → Only Admin and Teacher
 // router.put(
-//   '/:id', 
-//   authorizeRoles('admin', 'teacher'),     // 🔐 Role check
-//   studentValidationRules,                 // 📏 Validate input fields
-//   validateRequest,                        // 🛡️ Handle validation errors
-//   updateStudent                           // 🧠 Controller to update student
+//   '/:id',
+//   authorizeRoles('admin', 'teacher'),
+//   upload, // ✅ 🆕 Added file upload middleware
+//   studentValidationRules,
+//   validateRequest,
+//   updateStudent
 // );
 
 // // ❌ Delete student → Only Admin and Teacher
 // router.delete(
-//   '/:id', 
-//   authorizeRoles('admin', 'teacher'),     // 🔐 Role check
-//   deleteStudent                           // 🧠 Controller to delete student
+//   '/:id',
+//   authorizeRoles('admin', 'teacher'),
+//   deleteStudent
 // );
 
 // // 📤 Export the router to be used in main app
@@ -198,7 +111,7 @@ import {
   deleteStudent        // ❌ Delete a student
 } from '../controllers/studentController.js';
 
-// 🖼️ Import upload middleware for file uploads
+// 🖼️ Import upload middleware for file uploads (Multer)
 import upload from '../middleware/uploadMiddleware.js';
 
 // 🔐 Import authentication middleware to verify JWT
@@ -228,7 +141,7 @@ function authorizeRoles(...allowedRoles) {
 // 🔐 Apply Auth Globally to All Routes
 // ============================
 
-router.use(authMiddleware);
+router.use(authMiddleware); // ✅ All routes require valid JWT
 
 // ============================
 // 📚 Student Routes with Role-Based Access
@@ -237,11 +150,11 @@ router.use(authMiddleware);
 // 🆕 Create student → Only Admin and Teacher
 router.post(
   '/',
-  authorizeRoles('admin', 'teacher'),
-  upload, // ✅ File upload middleware
-  studentValidationRules,
-  validateRequest,
-  createStudent
+  authorizeRoles('admin', 'teacher'),     // 🔐 Role check
+  upload.single('photo'),                 // 🖼️ Handle photo upload
+  studentValidationRules,                 // 📏 Validate fields
+  validateRequest,                        // 🛡️ Handle validation errors
+  createStudent                           // 🧠 Controller logic
 );
 
 // 📄 Get all students → Admin, Teacher, Student
@@ -261,11 +174,11 @@ router.get(
 // ✏️ Update student → Only Admin and Teacher
 router.put(
   '/:id',
-  authorizeRoles('admin', 'teacher'),
-  upload, // ✅ 🆕 Added file upload middleware
-  studentValidationRules,
-  validateRequest,
-  updateStudent
+  authorizeRoles('admin', 'teacher'),     // 🔐 Role check
+  upload.single('photo'),                 // 🖼️ Handle new photo upload
+  studentValidationRules,                 // 📏 Validate fields
+  validateRequest,                        // 🛡️ Handle validation errors
+  updateStudent                           // 🧠 Controller logic
 );
 
 // ❌ Delete student → Only Admin and Teacher

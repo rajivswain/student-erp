@@ -1,10 +1,11 @@
-// // src/pages/students/AddStudent.jsx
-// import React, { useState } from 'react';
-// import { createStudent } from '../../services/studentsService';
+// import React, { useState, useEffect } from 'react';
+// import { useParams } from 'react-router-dom';
+// import { getStudentById, updateStudent } from '../../services/studentsService';
 // import { supabase } from '../../lib/supabaseClient';
-// import AddStudentForm from '../../components/Students/AddStudentForm';
+// import EditStudentForm from '../../components/Students/EditStudentForm';
 
-// const AddStudent = () => {
+// const EditStudent = () => {
+//   const { id } = useParams();
 //   const [formData, setFormData] = useState({
 //     name: '',
 //     roll_number: '',
@@ -19,6 +20,21 @@
 //   });
 
 //   const [photoFile, setPhotoFile] = useState(null);
+//   const [existingPhotoUrl, setExistingPhotoUrl] = useState('');
+
+//   useEffect(() => {
+//     const fetchStudent = async () => {
+//       try {
+//         const student = await getStudentById(id);
+//         setFormData(student);
+//         setExistingPhotoUrl(student.photo || '');
+//       } catch (error) {
+//         console.error('Failed to fetch student:', error);
+//       }
+//     };
+
+//     fetchStudent();
+//   }, [id]);
 
 //   const handleChange = (e) => {
 //     const { name, value } = e.target;
@@ -32,7 +48,7 @@
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 
-//     let photoUrl = '';
+//     let photoUrl = existingPhotoUrl;
 
 //     if (photoFile) {
 //       const fileName = `${Date.now()}_${photoFile.name}`;
@@ -51,38 +67,25 @@
 //         .getPublicUrl(fileName).data.publicUrl;
 //     }
 
-//     const studentData = {
+//     const updatedStudent = {
 //       ...formData,
 //       photo: photoUrl
 //     };
 
 //     try {
-//       const result = await createStudent(studentData);
-//       console.log('Student created:', result);
-//       alert('Student added successfully!');
-//       setFormData({
-//         name: '',
-//         roll_number: '',
-//         class: '',
-//         section: '',
-//         dob: '',
-//         email: '',
-//         phone: '',
-//         address: '',
-//         guardian_name: '',
-//         photo: ''
-//       });
-//       setPhotoFile(null);
+//       await updateStudent(id, updatedStudent);
+//       alert('Student updated successfully!');
 //     } catch (error) {
-//       console.error('Error adding student:', error);
-//       alert('Failed to add student.');
+//       console.error('Error updating student:', error);
+//       alert('Failed to update student.');
 //     }
 //   };
 
 //   return (
-//     <AddStudentForm
+//     <EditStudentForm
 //       formData={formData}
 //       photoFile={photoFile}
+//       existingPhotoUrl={existingPhotoUrl}
 //       handleChange={handleChange}
 //       handlePhotoChange={handlePhotoChange}
 //       handleSubmit={handleSubmit}
@@ -90,20 +93,32 @@
 //   );
 // };
 
-// export default AddStudent;
+// export default EditStudent;
 
 
 
+import React, { useEffect, useState } from 'react';
+import { get, put } from '../../services/api';
+import { useNavigate, useParams } from 'react-router-dom';
 
-
-import React, { useState } from 'react';
-import { post } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
-
-function AddStudent() {
+function EditStudent() {
+  const { id } = useParams();
   const [formData, setFormData] = useState({ name: '', email: '', photo: null });
   const [photoPreview, setPhotoPreview] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    async function fetchStudent() {
+      try {
+        const data = await get(`/students/${id}`);
+        setFormData({ name: data.name, email: data.email, photo: null });
+        if (data.photoUrl) setPhotoPreview(data.photoUrl); // Supabase public URL
+      } catch (err) {
+        console.error('Failed to load student', err);
+      }
+    }
+    fetchStudent();
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -126,21 +141,21 @@ function AddStudent() {
       payload.append('email', formData.email);
       if (formData.photo) payload.append('photo', formData.photo);
 
-      await post('/students', payload);
+      await put(`/students/${id}`, payload);
       navigate('/students');
     } catch (err) {
-      console.error('Failed to add student', err);
+      console.error('Failed to update student', err);
     }
   };
 
   return (
     <div className="max-w-xl mx-auto mt-10 p-4">
-      <h2 className="text-xl font-bold mb-4">Add Student</h2>
+      <h2 className="text-xl font-bold mb-4">Edit Student</h2>
 
       {photoPreview && (
         <img
           src={photoPreview}
-          alt="Preview"
+          alt="Student"
           className="w-32 h-32 object-cover rounded mb-4"
         />
       )}
@@ -172,13 +187,13 @@ function AddStudent() {
         />
         <button
           type="submit"
-          className="px-4 py-2 bg-green-600 text-white rounded"
+          className="px-4 py-2 bg-blue-600 text-white rounded"
         >
-          Add Student
+          Update Student
         </button>
       </form>
     </div>
   );
 }
 
-export default AddStudent;
+export default EditStudent;
